@@ -3,7 +3,6 @@ package cz.tomasdvorak.beans;
 import cz.tomasdvorak.auth.AuthenticationHeader;
 import cz.tomasdvorak.auth.InvalidCredentialsException;
 import cz.tomasdvorak.dto.Message;
-import cz.tomasdvorak.entities.LogEntry;
 
 import javax.jws.WebService;
 import javax.jws.soap.SOAPBinding;

@@ -1,7 +1,5 @@
 package cz.tomasdvorak.multitenancy;
 
-import cz.tomasdvorak.multitenancy.TenantHolder;
-
 import java.lang.reflect.Proxy;
 
 public class TenantWrapper {

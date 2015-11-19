@@ -43,8 +43,7 @@ public class CommunicationServiceImpl implements CommunicationService {
         String tenantName = getTenant(auth);
         // do not expose our LogEntry entities, convert them to Message objects!
         List<LogEntry> allMessages = TenantWrapper.wrap(tenantName, SafeStorage.class, storage).getAllMessages();
-        List<Message> result = allMessages.stream().map(logEntry -> new Message(logEntry.getMessage(), logEntry.getCreated())).collect(Collectors.toList());
-        return result;
+        return allMessages.stream().map(logEntry -> new Message(logEntry.getMessage(), logEntry.getCreated())).collect(Collectors.toList());
     }
 
     private String getTenant(final AuthenticationHeader auth) throws InvalidCredentialsException {
