@@ -11,6 +11,7 @@
     <packaging>war</packaging>
 
     <properties>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <version.hibernate>5.0.3.Final</version.hibernate>
     </properties>
 
