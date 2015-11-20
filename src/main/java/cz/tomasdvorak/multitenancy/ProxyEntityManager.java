@@ -49,7 +49,7 @@ public class ProxyEntityManager {
      * @return EntityManager for Tenant or default EntityManager, if no tenant logged in.
      */
     @Produces
-    EntityManager getEntityManager() {
+    private EntityManager getEntityManager() {
         return proxy;
     }
     private EntityManager getCurrentEntityManager() {
