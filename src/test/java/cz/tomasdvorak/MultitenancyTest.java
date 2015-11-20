@@ -22,9 +22,7 @@ import javax.xml.ws.Service;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.Arrays;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 import java.util.stream.Collectors;
 
 @RunWith(Arquillian.class)
@@ -52,10 +50,10 @@ public class MultitenancyTest {
     public void testSimpleStatelessWebServiceEndpoint(@ArquillianResource final URL deploymentUrl) throws Exception {
         final CommunicationService port = getCommunicationService(deploymentUrl);
 
-        port.storeMessage("Tenant_A", "secret message a");
+        port.sendMessage("Tenant_A", "secret message a");
 
-        port.storeMessage("Tenant_B", "secret message b");
-        port.storeMessage("Tenant_B", "another message b");
+        port.sendMessage("Tenant_B", "secret message b");
+        port.sendMessage("Tenant_B", "another message b");
 
         verify(
             port.readMessages(new AuthenticationHeader("Tenant_A", "lorem")),
@@ -63,9 +61,9 @@ public class MultitenancyTest {
         );
 
         verify(
-            port.readMessages(new AuthenticationHeader("Tenant_B", "ipsum")),
-            "secret message b",
-            "another message b"
+                port.readMessages(new AuthenticationHeader("Tenant_B", "ipsum")),
+                "secret message b",
+                "another message b"
         );
     }
 

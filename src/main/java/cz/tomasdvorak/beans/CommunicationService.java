@@ -16,7 +16,7 @@ public interface CommunicationService {
      * @param message text payload
      * @throws UnknownRecipientException if message sent to unknown tenant
      */
-    void storeMessage(String recipient, String message) throws UnknownRecipientException;
+    void sendMessage(String recipient, String message) throws UnknownRecipientException;
 
     List<Message> readMessages(AuthenticationHeader auth) throws InvalidCredentialsException;
 }

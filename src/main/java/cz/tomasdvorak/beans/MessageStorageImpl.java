@@ -13,11 +13,14 @@ import java.util.List;
 
 /**
  * Message storage is simple stateless bean without any notion/logic of tenants. The link between tenant and storage
- * is managed purely by EntityManager, which is injected by container and created by {@link cz.tomasdvorak.multitenancy.ProxyEntityManager}.
+ * is managed purely by EntityManager, which is injected by CDI container and created by {@link cz.tomasdvorak.multitenancy.ProxyEntityManager}.
  */
 @Stateless
 public class MessageStorageImpl implements MessageStorage {
 
+    /**
+     * Injected, tenant aware, EntityManager.
+     */
     @Inject
     private EntityManager entityManager;
 

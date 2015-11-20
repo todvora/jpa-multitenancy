@@ -32,7 +32,7 @@ public class CommunicationServiceImpl implements CommunicationService {
 
     @Override
     @WebMethod
-    public void storeMessage(final String recipient, final String message) throws UnknownRecipientException {
+    public void sendMessage(final String recipient, final String message) throws UnknownRecipientException {
         final Tenant tenant = tenantRegistry.getTenant(recipient).orElseThrow(() -> new UnknownRecipientException("Recipient '" + recipient + "' not found!"));
         getTenantStorage(tenant).saveMessage(message);
     }

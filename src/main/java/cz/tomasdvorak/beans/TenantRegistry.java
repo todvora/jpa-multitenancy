@@ -13,10 +13,16 @@ import javax.persistence.criteria.CriteriaQuery;
 import javax.persistence.criteria.Root;
 import java.util.*;
 
+/**
+ * Loads Tenants from DB, creates EntityManagerFactories for them.
+ */
 @Singleton
 @Startup
 public class TenantRegistry {
 
+    /**
+     * Default, container managed EntityManager
+     */
     @PersistenceContext
     private EntityManager entityManager;
 
@@ -54,6 +60,11 @@ public class TenantRegistry {
         return query.getResultList();
     }
 
+    /**
+     * Create new {@link EntityManagerFactory} using this tenant's schema.
+     * @param tenant Tenant used to retrieve schema name
+     * @return new EntityManagerFactory
+     */
     private EntityManagerFactory createEntityManagerFactory(final Tenant tenant) {
         final Map<String, String> props = new TreeMap<>();
         logger.debug("Creating entity manager factory on schema '" + tenant.getSchemaName() + "' for tenant '" + tenant.getName() + "'.");
@@ -65,13 +76,18 @@ public class TenantRegistry {
         return tenants.stream().filter(tenant -> tenant.getName().equals(tenantName)).findFirst();
     }
 
+    /**
+     * @return read-only set of registred tenants.
+     */
     public Set<Tenant> getAllTenants() {
         return Collections.unmodifiableSet(tenants);
     }
 
+    /**
+     * Returns EntityManagerFactory from the cache. EMF is created during tenant registration and initialization.
+     * @see #startupTenants()
+     */
     public EntityManagerFactory getEntityManagerFactory(final String tenantName) {
         return entityManagerFactories.get(tenantName);
     }
-
-
 }
