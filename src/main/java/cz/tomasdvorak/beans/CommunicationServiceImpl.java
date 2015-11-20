@@ -1,20 +1,17 @@
 package cz.tomasdvorak.beans;
 
-import cz.tomasdvorak.auth.AuthenticationHeader;
-import cz.tomasdvorak.auth.InvalidCredentialsException;
+import cz.tomasdvorak.dto.AuthenticationHeader;
+import cz.tomasdvorak.exceptions.InvalidCredentialsException;
 import cz.tomasdvorak.dto.Message;
-import cz.tomasdvorak.entities.LogEntry;
 import cz.tomasdvorak.entities.Tenant;
+import cz.tomasdvorak.exceptions.UnknownRecipientException;
 import cz.tomasdvorak.multitenancy.TenantWrapper;
 
-import javax.annotation.Resource;
 import javax.ejb.Stateless;
 import javax.inject.Inject;
 import javax.jws.WebMethod;
 import javax.jws.WebService;
-import javax.xml.ws.WebServiceContext;
 import java.util.List;
-import java.util.Optional;
 import java.util.stream.Collectors;
 
 @WebService
@@ -22,39 +19,43 @@ import java.util.stream.Collectors;
 public class CommunicationServiceImpl implements CommunicationService {
 
     @Inject
-    private SafeStorage storage;
+    private MessageStorage storage;
 
     @Inject
-    private TenantLoader tenantLoader;
+    private TenantRegistry tenantRegistry;
 
-    @Resource
-    private WebServiceContext ctx;
+    // another possible source of auth data  - WebServiceContext
+    // depends on your security configuration in application server.
+    // The wrapping with TenantWrapped could be then moved to an Interceptor, reading tenant name from ctx.
+    // @Resource
+    // private WebServiceContext ctx;
 
     @Override
     @WebMethod
-    public void storeMessage(AuthenticationHeader auth, String message) throws InvalidCredentialsException {
-        String tenantName = getTenant(auth);
-        TenantWrapper.wrap(tenantName, SafeStorage.class, storage).saveMessage(message);
+    public void storeMessage(final String recipient, final String message) throws UnknownRecipientException {
+        final Tenant tenant = tenantRegistry.getTenant(recipient).orElseThrow(() -> new UnknownRecipientException("Recipient '" + recipient + "' not found!"));
+        getTenantStorage(tenant).saveMessage(message);
     }
 
     @Override
     @WebMethod
-    public List<Message> readMessages(AuthenticationHeader auth) throws InvalidCredentialsException {
-        String tenantName = getTenant(auth);
-        // do not expose our LogEntry entities, convert them to Message objects!
-        List<LogEntry> allMessages = TenantWrapper.wrap(tenantName, SafeStorage.class, storage).getAllMessages();
-        return allMessages.stream().map(logEntry -> new Message(logEntry.getMessage(), logEntry.getCreated())).collect(Collectors.toList());
+    public List<Message> readMessages(final AuthenticationHeader auth) throws InvalidCredentialsException {
+        final Tenant tenant = getTenant(auth);
+        return getTenantStorage(tenant)
+                .getAllMessages()
+                .stream()
+                .map(entry -> new Message(entry.getMessage(), entry.getCreated())) // do not expose our LogEntry entities, convert them to Message objects!
+                .collect(Collectors.toList());
     }
 
-    private String getTenant(final AuthenticationHeader auth) throws InvalidCredentialsException {
-        System.out.println(auth);
+    private MessageStorage getTenantStorage(final Tenant tenant) {
+        return TenantWrapper.wrap(tenant.getName(), MessageStorage.class, storage);
+    }
 
-        Optional<Tenant> tenant = tenantLoader.getTenant(auth.getTenantName());
-        Tenant t = tenant.orElseThrow(() -> new InvalidCredentialsException("Username not found!"));
-        if (!t.getPassword().equals(auth.getPassword())) {
-            throw new InvalidCredentialsException("Password does not match!");
-        }
-        return t.getName();
+    private Tenant getTenant(final AuthenticationHeader auth) throws InvalidCredentialsException {
+        return tenantRegistry.getTenant(auth.getTenantName())
+            .filter(tenant -> tenant.getPassword().equals(auth.getPassword()))
+            .orElseThrow(() -> new InvalidCredentialsException("Invalid username or password!"));
     }
 
 }

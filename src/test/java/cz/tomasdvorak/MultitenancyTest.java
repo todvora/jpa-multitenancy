@@ -1,8 +1,10 @@
 package cz.tomasdvorak;
 
-import cz.tomasdvorak.auth.AuthenticationHeader;
+import cz.tomasdvorak.dto.AuthenticationHeader;
 import cz.tomasdvorak.beans.CommunicationService;
 import cz.tomasdvorak.dto.Message;
+import cz.tomasdvorak.exceptions.InvalidCredentialsException;
+import org.apache.log4j.Logger;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
@@ -19,10 +21,17 @@ import javax.xml.namespace.QName;
 import javax.xml.ws.Service;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 @RunWith(Arquillian.class)
 public class MultitenancyTest {
+
+    private static final Logger logger = Logger.getLogger(MultitenancyTest.class);
+
 
     @Deployment
     public static Archive<?> createDeployment() {
@@ -31,22 +40,40 @@ public class MultitenancyTest {
                 .addAsResource("persistence.xml", "META-INF/persistence.xml")
                 .addAsWebInfResource("jbossas-ds.xml")
                 .addAsResource("schema/init.sql", "init.sql")
+                .addAsResource("log4j.xml")
                 .addAsWebInfResource(EmptyAsset.INSTANCE, "beans.xml");
-        System.out.println(archive.toString(true));
+        logger.debug(archive.toString(true));
         return archive;
     }
 
 
     @Test
     @RunAsClient
-    public void testSimpleStatelessWebServiceEndpoint(@ArquillianResource URL deploymentUrl) throws Exception {
+    public void testSimpleStatelessWebServiceEndpoint(@ArquillianResource final URL deploymentUrl) throws Exception {
         final CommunicationService port = getCommunicationService(deploymentUrl);
-        port.storeMessage(new AuthenticationHeader("Tenant_A", "lorem"), "_secret_message_a_");
-        port.storeMessage(new AuthenticationHeader("Tenant_B", "ipsum"), "_secret_message_b_");
-        final List<Message> result = port.readMessages(new AuthenticationHeader("Tenant_A", "lorem"));
+
+        port.storeMessage("Tenant_A", "secret message a");
+
+        port.storeMessage("Tenant_B", "secret message b");
+        port.storeMessage("Tenant_B", "another message b");
+
+        verify(
+            port.readMessages(new AuthenticationHeader("Tenant_A", "lorem")),
+            "secret message a"
+        );
+
+        verify(
+            port.readMessages(new AuthenticationHeader("Tenant_B", "ipsum")),
+            "secret message b",
+            "another message b"
+        );
+    }
+
+    private void verify(final List<Message> result, final String... expectedMessages) throws InvalidCredentialsException {
         Assert.assertNotNull(result);
-        Assert.assertEquals(1, result.size());
-        Assert.assertEquals("_secret_message_a_", result.get(0).getText());
+        final List<String> actualMessages = result.stream().map(Message::getText).collect(Collectors.toList());
+        final List<String> expected = Arrays.asList(expectedMessages);
+        Assert.assertEquals(expected, actualMessages);
     }
 
     private CommunicationService getCommunicationService(final @ArquillianResource URL deploymentUrl) throws MalformedURLException {

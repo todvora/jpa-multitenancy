@@ -1,6 +1,7 @@
 package cz.tomasdvorak.multitenancy;
 
-import cz.tomasdvorak.beans.TenantLoader;
+import cz.tomasdvorak.beans.TenantRegistry;
+import org.apache.log4j.Logger;
 
 import javax.enterprise.context.RequestScoped;
 import javax.enterprise.inject.Produces;
@@ -16,11 +17,13 @@ public class ProxyEntityManager {
     private EntityManager entityManager;
 
     @Inject
-    TenantLoader tenantLoader;
+    private TenantRegistry tenantRegistry;
 
     private final EntityManager proxy;
 
-    public ProxyEntityManager() {
+    private static final Logger logger = Logger.getLogger(ProxyEntityManager.class);
+
+    private ProxyEntityManager() {
         proxy = (EntityManager)Proxy.newProxyInstance(this.getClass().getClassLoader(), new Class<?>[] { EntityManager.class },
             (proxy, method, args) -> method.invoke(getCurrentEntityManager(), args));
     }
@@ -33,12 +36,11 @@ public class ProxyEntityManager {
     private EntityManager getCurrentEntityManager() {
         final String currentTenant = TenantHolder.getCurrentTenant();
         if (currentTenant != null) {
-            System.out.println("Returning connection for tenant " + currentTenant);
-            final EntityManager em = tenantLoader.getEntityManagerFactory(currentTenant).createEntityManager();
+            logger.debug("Returning connection for tenant " + currentTenant);
+            final EntityManager em = tenantRegistry.getEntityManagerFactory(currentTenant).createEntityManager();
             em.joinTransaction();
             return em;
         }
-        System.out.println("Returning connection for default");
         return entityManager;
     }
 }

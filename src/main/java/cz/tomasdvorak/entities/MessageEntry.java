@@ -4,7 +4,7 @@ import javax.persistence.*;
 import java.util.Date;
 
 @Entity
-public class LogEntry {
+public class MessageEntry {
     @Id
     @GeneratedValue(strategy= GenerationType.IDENTITY)
     private Long id;
@@ -16,17 +16,16 @@ public class LogEntry {
     @Column(updatable = false, length = 100)
     private String message;
 
-    public LogEntry() {
+    private MessageEntry() {
     }
 
-    public LogEntry(final String message) {
+    public MessageEntry(final String message) {
         this.message = message;
     }
 
     public Long getId() {
         return id;
     }
-
 
     public String getMessage() {
         return message;
@@ -37,7 +36,7 @@ public class LogEntry {
     }
 
     @PrePersist
-    void setCreatedDate() {
+    protected void setCreatedDate() {
         created = new Date();
     }
 }

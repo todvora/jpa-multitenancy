@@ -1,14 +1,16 @@
 package cz.tomasdvorak.dto;
 
+import javax.xml.bind.annotation.XmlAccessType;
+import javax.xml.bind.annotation.XmlAccessorType;
 import java.util.Date;
 
+@XmlAccessorType(XmlAccessType.FIELD)
 public class Message {
-    
+
     private String text;
     private Date date;
 
-
-    public Message() {
+    private Message() {
     }
 
     public Message(final String text, final Date date) {
@@ -20,15 +22,7 @@ public class Message {
         return text;
     }
 
-    public void setText(final String text) {
-        this.text = text;
-    }
-
     public Date getDate() {
         return date;
-    }
-
-    public void setDate(final Date date) {
-        this.date = date;
     }
 }

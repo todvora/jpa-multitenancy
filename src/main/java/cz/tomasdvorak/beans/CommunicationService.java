@@ -1,17 +1,22 @@
 package cz.tomasdvorak.beans;
 
-import cz.tomasdvorak.auth.AuthenticationHeader;
-import cz.tomasdvorak.auth.InvalidCredentialsException;
+import cz.tomasdvorak.dto.AuthenticationHeader;
+import cz.tomasdvorak.exceptions.InvalidCredentialsException;
 import cz.tomasdvorak.dto.Message;
+import cz.tomasdvorak.exceptions.UnknownRecipientException;
 
 import javax.jws.WebService;
-import javax.jws.soap.SOAPBinding;
 import java.util.List;
 
 @WebService
-@SOAPBinding(style = SOAPBinding.Style.DOCUMENT, parameterStyle = SOAPBinding.ParameterStyle.WRAPPED)
 public interface CommunicationService {
-    void storeMessage(AuthenticationHeader auth, String message) throws InvalidCredentialsException;
+    /**
+     * Anyone can send a message to tenant, if the tenant name is known and valid
+     * @param recipient tenant name to send message to
+     * @param message text payload
+     * @throws UnknownRecipientException if message sent to unknown tenant
+     */
+    void storeMessage(String recipient, String message) throws UnknownRecipientException;
 
     List<Message> readMessages(AuthenticationHeader auth) throws InvalidCredentialsException;
 }

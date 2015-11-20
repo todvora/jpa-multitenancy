@@ -1,5 +1,8 @@
 package cz.tomasdvorak.multitenancy;
 
+/**
+ * Thread local storage of the tenant name.
+ */
 public class TenantHolder {
 
     private static final InheritableThreadLocal<String> currentTenantName = new InheritableThreadLocal<>();
