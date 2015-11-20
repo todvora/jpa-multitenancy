@@ -31,6 +31,9 @@ public class MultitenancyTest {
     private static final Logger logger = Logger.getLogger(MultitenancyTest.class);
 
 
+    /**
+     * Create arquillian deployment and start managed jboss server.
+     */
     @Deployment
     public static Archive<?> createDeployment() {
         final WebArchive archive = ShrinkWrap.create(WebArchive.class, "test.war")
@@ -67,13 +70,24 @@ public class MultitenancyTest {
         );
     }
 
-    private void verify(final List<Message> result, final String... expectedMessages) throws InvalidCredentialsException {
-        Assert.assertNotNull(result);
-        final List<String> actualMessages = result.stream().map(Message::getText).collect(Collectors.toList());
+    /**
+     * Verify, that read messages match expected
+     * @param readMessages messages supplied by the webservice
+     * @param expectedMessages expected set of messages
+     */
+    private void verify(final List<Message> readMessages, final String... expectedMessages) {
+        Assert.assertNotNull(readMessages);
+        final List<String> actualMessages = readMessages.stream().map(Message::getText).collect(Collectors.toList());
         final List<String> expected = Arrays.asList(expectedMessages);
         Assert.assertEquals(expected, actualMessages);
     }
 
+    /**
+     * Connect to the CommunicationWebservice
+     * @param deploymentUrl url of running application servlet
+     * @return port of the webservice
+     * @throws MalformedURLException
+     */
     private CommunicationService getCommunicationService(final @ArquillianResource URL deploymentUrl) throws MalformedURLException {
         final QName serviceName = new QName("http://beans.tomasdvorak.cz/", "CommunicationServiceImplService");
         final URL wsdlURL = new URL(deploymentUrl, "CommunicationServiceImpl?wsdl");

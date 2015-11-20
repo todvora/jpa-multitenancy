@@ -18,5 +18,11 @@ public interface CommunicationService {
      */
     void sendMessage(String recipient, String message) throws UnknownRecipientException;
 
+    /**
+     * Read all messages sent to tenant in {@link AuthenticationHeader#tenantName}
+     * @param auth TenantName(=username) & password combination
+     * @return List of all available messages for this tenant
+     * @throws InvalidCredentialsException if tenant not found or password does not match.
+     */
     List<Message> readMessages(AuthenticationHeader auth) throws InvalidCredentialsException;
 }
