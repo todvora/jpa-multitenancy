@@ -20,7 +20,7 @@ import java.lang.reflect.Proxy;
 public class ProxyEntityManager {
 
     /**
-     * Inject the default EntityManager, operated by application container. Serves as a fallback, if there is no
+     * Inject the default EntityManager, operated by a application container. Serves as a fallback, if there is no
      * tenant logged in and we are asked to return a EntityManager instance.
      */
     @PersistenceContext

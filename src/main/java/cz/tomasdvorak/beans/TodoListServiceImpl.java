@@ -5,7 +5,6 @@ import cz.tomasdvorak.multitenancy.TenantInterceptor;
 
 import javax.ejb.Stateless;
 import javax.inject.Inject;
-import javax.interceptor.Interceptor;
 import javax.interceptor.Interceptors;
 import javax.jws.WebMethod;
 import javax.jws.WebService;

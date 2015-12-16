@@ -55,7 +55,7 @@ public class MultitenancyTest {
 
     @Test
     @RunAsClient
-    public void testSimpleStatelessWebServiceEndpoint(@ArquillianResource final URL deploymentUrl) throws Exception {
+    public void testSimpleStatelessWebServiceEndpoint() throws Exception {
         final TodoListService alicePort = getServicePort("Alice", "lorem");
         final TodoListService bobPort = getServicePort("Bob", "ipsum");
 
