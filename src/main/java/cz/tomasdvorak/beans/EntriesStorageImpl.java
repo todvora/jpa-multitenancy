@@ -1,6 +1,6 @@
 package cz.tomasdvorak.beans;
 
-import cz.tomasdvorak.entities.MessageEntry;
+import cz.tomasdvorak.entities.TodoEntry;
 
 import javax.ejb.Stateless;
 import javax.inject.Inject;
@@ -12,31 +12,31 @@ import javax.persistence.criteria.Root;
 import java.util.List;
 
 /**
- * Message storage is simple stateless bean without any notion/logic of tenants. The link between tenant and storage
+ * Entries storage is simple stateless bean without any notion/logic of tenants. The link between tenant and storage
  * is managed purely by EntityManager, which is injected by CDI container and created by {@link cz.tomasdvorak.multitenancy.ProxyEntityManager}.
  */
 @Stateless
-public class MessageStorageImpl implements MessageStorage {
+public class EntriesStorageImpl implements EntriesStorage {
 
     /**
-     * Injected, tenant aware, EntityManager.
+     * Injected, tenant aware EntityManager.
      */
     @Inject
     private EntityManager entityManager;
 
     @Override
-    public void saveMessage(final String message) {
-        entityManager.persist(new MessageEntry(message));
+    public void saveEntry(final String text) {
+        entityManager.persist(new TodoEntry(text));
     }
 
     @Override
-    public List<MessageEntry> getAllMessages() {
+    public List<TodoEntry> getAllEntries() {
         final CriteriaBuilder cb = entityManager.getCriteriaBuilder();
-        final CriteriaQuery<MessageEntry> q = cb.createQuery(MessageEntry.class);
-        final Root<MessageEntry> c = q.from(MessageEntry.class);
+        final CriteriaQuery<TodoEntry> q = cb.createQuery(TodoEntry.class);
+        final Root<TodoEntry> c = q.from(TodoEntry.class);
         q.select(c);
         q.orderBy(cb.asc(c.get("created")));
-        final TypedQuery<MessageEntry> query = entityManager.createQuery(q);
+        final TypedQuery<TodoEntry> query = entityManager.createQuery(q);
         return query.getResultList();
     }
 }

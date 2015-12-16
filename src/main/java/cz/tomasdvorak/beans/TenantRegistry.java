@@ -77,13 +77,6 @@ public class TenantRegistry {
     }
 
     /**
-     * @return read-only set of registred tenants.
-     */
-    public Set<Tenant> getAllTenants() {
-        return Collections.unmodifiableSet(tenants);
-    }
-
-    /**
      * Returns EntityManagerFactory from the cache. EMF is created during tenant registration and initialization.
      * @see #startupTenants()
      */

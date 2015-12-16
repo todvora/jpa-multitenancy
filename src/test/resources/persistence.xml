@@ -8,7 +8,7 @@
     <jta-data-source>jdbc/arquillian</jta-data-source>
 
     <class>cz.tomasdvorak.entities.Tenant</class>
-    <class>cz.tomasdvorak.entities.MessageEntry</class>
+    <class>cz.tomasdvorak.entities.TodoEntry</class>
 
     <properties>
         <property name="hibernate.show_sql" value="true"/>

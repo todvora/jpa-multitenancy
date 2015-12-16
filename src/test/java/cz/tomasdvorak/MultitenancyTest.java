@@ -1,9 +1,7 @@
 package cz.tomasdvorak;
 
-import cz.tomasdvorak.dto.AuthenticationHeader;
-import cz.tomasdvorak.beans.CommunicationService;
-import cz.tomasdvorak.dto.Message;
-import cz.tomasdvorak.exceptions.InvalidCredentialsException;
+import cz.tomasdvorak.beans.TodoListService;
+import cz.tomasdvorak.dto.TodoItem;
 import org.apache.log4j.Logger;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
@@ -18,11 +16,13 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import javax.xml.namespace.QName;
+import javax.xml.ws.BindingProvider;
 import javax.xml.ws.Service;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 @RunWith(Arquillian.class)
@@ -30,6 +30,11 @@ public class MultitenancyTest {
 
     private static final Logger logger = Logger.getLogger(MultitenancyTest.class);
 
+    /**
+    * url of running application servlet, injected by arquillian
+    */
+    @ArquillianResource
+    private URL deploymentUrl;
 
     /**
      * Create arquillian deployment and start managed jboss server.
@@ -51,48 +56,53 @@ public class MultitenancyTest {
     @Test
     @RunAsClient
     public void testSimpleStatelessWebServiceEndpoint(@ArquillianResource final URL deploymentUrl) throws Exception {
-        final CommunicationService port = getCommunicationService(deploymentUrl);
+        final TodoListService alicePort = getServicePort("Alice", "lorem");
+        final TodoListService bobPort = getServicePort("Bob", "ipsum");
 
-        port.sendMessage("Tenant_A", "secret message a");
-
-        port.sendMessage("Tenant_B", "secret message b");
-        port.sendMessage("Tenant_B", "another message b");
+        alicePort.insertItem("secret message a");
+        bobPort.insertItem("secret message b");
+        bobPort.insertItem("another message b");
 
         verify(
-            port.readMessages(new AuthenticationHeader("Tenant_A", "lorem")),
+            alicePort.readItems(),
             "secret message a"
         );
 
         verify(
-                port.readMessages(new AuthenticationHeader("Tenant_B", "ipsum")),
-                "secret message b",
-                "another message b"
+                bobPort.readItems(),
+            "secret message b",
+            "another message b"
         );
     }
 
     /**
      * Verify, that read messages match expected
-     * @param readMessages messages supplied by the webservice
+     * @param readTodoItems messages supplied by the webservice
      * @param expectedMessages expected set of messages
      */
-    private void verify(final List<Message> readMessages, final String... expectedMessages) {
-        Assert.assertNotNull(readMessages);
-        final List<String> actualMessages = readMessages.stream().map(Message::getText).collect(Collectors.toList());
+    private void verify(final List<TodoItem> readTodoItems, final String... expectedMessages) {
+        Assert.assertNotNull(readTodoItems);
+        final List<String> actualMessages = readTodoItems.stream().map(TodoItem::getText).collect(Collectors.toList());
         final List<String> expected = Arrays.asList(expectedMessages);
         Assert.assertEquals(expected, actualMessages);
     }
 
     /**
-     * Connect to the CommunicationWebservice
-     * @param deploymentUrl url of running application servlet
+     * Connect to the SOAP CommunicationWebservice
+
      * @return port of the webservice
      * @throws MalformedURLException
      */
-    private CommunicationService getCommunicationService(final @ArquillianResource URL deploymentUrl) throws MalformedURLException {
-        final QName serviceName = new QName("http://beans.tomasdvorak.cz/", "CommunicationServiceImplService");
-        final URL wsdlURL = new URL(deploymentUrl, "CommunicationServiceImpl?wsdl");
+    private TodoListService getServicePort(final String username, final String password) throws MalformedURLException {
+        final QName serviceName = new QName("http://beans.tomasdvorak.cz/", "TodoListServiceImplService");
+        final URL wsdlURL = new URL(deploymentUrl, "TodoListServiceImpl?wsdl");
         final Service service = Service.create(wsdlURL, serviceName);
-        return service.getPort(CommunicationService.class);
+        final TodoListService port = service.getPort(TodoListService.class);
+
+        final Map<String, Object> requestContext = ((BindingProvider) port).getRequestContext();
+        requestContext.put(BindingProvider.USERNAME_PROPERTY, username);
+        requestContext.put(BindingProvider.PASSWORD_PROPERTY, password);
+        return port;
     }
 
 }

@@ -52,6 +52,7 @@ public class ProxyEntityManager {
     private EntityManager getEntityManager() {
         return proxy;
     }
+
     private EntityManager getCurrentEntityManager() {
         final String currentTenant = TenantHolder.getCurrentTenant();
         if (currentTenant != null) {

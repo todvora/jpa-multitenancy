@@ -5,15 +5,15 @@ import javax.xml.bind.annotation.XmlAccessorType;
 import java.util.Date;
 
 @XmlAccessorType(XmlAccessType.FIELD)
-public class Message {
+public class TodoItem {
 
     private String text;
     private Date date;
 
-    private Message() {
+    private TodoItem() {
     }
 
-    public Message(final String text, final Date date) {
+    public TodoItem(final String text, final Date date) {
         this.text = text;
         this.date = date;
     }
