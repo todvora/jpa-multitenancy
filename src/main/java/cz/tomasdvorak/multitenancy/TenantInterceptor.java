@@ -19,12 +19,6 @@ public class TenantInterceptor {
     @Inject
     private TenantRegistry tenantRegistry;
 
-    /**
-     * Webservice invocation context.
-     */
-    @Resource
-    private WebServiceContext ctx;
-
     @AroundInvoke
     public Object wrapWithTenant(final InvocationContext ctx) throws Exception {
 
