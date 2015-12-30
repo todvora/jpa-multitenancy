@@ -1,6 +1,7 @@
 package cz.tomasdvorak.beans;
 
 import cz.tomasdvorak.dto.TodoItem;
+import cz.tomasdvorak.exceptions.InvalidCredentialsException;
 import cz.tomasdvorak.multitenancy.TenantInterceptor;
 
 import javax.ejb.Stateless;
@@ -25,14 +26,14 @@ public class TodoListServiceImpl implements TodoListService {
 
     @Override
     @WebMethod
-    public void insertItem(final String todoItem) {
+    public void insertItem(final String todoItem) throws InvalidCredentialsException {
         // storage is already tenant-aware thanks to Interceptor configured on this WS
         storage.saveEntry(todoItem);
     }
 
     @Override
     @WebMethod
-    public List<TodoItem> readItems() {
+    public List<TodoItem> readItems() throws InvalidCredentialsException {
         // storage is already tenant-aware thanks to Interceptor configured on this WS
         return storage
             .getAllEntries()

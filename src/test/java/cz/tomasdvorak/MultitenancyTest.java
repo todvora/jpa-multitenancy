@@ -2,6 +2,7 @@ package cz.tomasdvorak;
 
 import cz.tomasdvorak.beans.TodoListService;
 import cz.tomasdvorak.dto.TodoItem;
+import cz.tomasdvorak.exceptions.InvalidCredentialsException;
 import org.apache.log4j.Logger;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
@@ -55,24 +56,32 @@ public class MultitenancyTest {
 
     @Test
     @RunAsClient
-    public void testSimpleStatelessWebServiceEndpoint() throws Exception {
+    public void testWebserviceCommunication() throws Exception {
         final TodoListService alicePort = getServicePort("Alice", "lorem");
         final TodoListService bobPort = getServicePort("Bob", "ipsum");
 
-        alicePort.insertItem("secret message a");
-        bobPort.insertItem("secret message b");
-        bobPort.insertItem("another message b");
+        alicePort.insertItem("Learn react.js");
+
+        bobPort.insertItem("Buy food");
+        bobPort.insertItem("Finish the JPA article");
 
         verify(
             alicePort.readItems(),
-            "secret message a"
+            "Learn react.js"
         );
 
         verify(
-                bobPort.readItems(),
-            "secret message b",
-            "another message b"
+            bobPort.readItems(),
+            "Buy food",
+            "Finish the JPA article"
         );
+    }
+
+    @RunAsClient
+    @Test(expected = InvalidCredentialsException.class)
+    public void testInvalidLogin() throws Exception {
+        final TodoListService alicePort = getServicePort("Alice", "wrong-pass");
+        alicePort.insertItem("Learn react.js");
     }
 
     /**
