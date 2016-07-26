@@ -5,9 +5,21 @@
         http://www.jboss.org/ironjacamar/schema
         http://docs.jboss.org/ironjacamar/schema/datasources_1_0.xsd">
     <datasource enabled="true"
-                jndi-name="jdbc/arquillian"
-                pool-name="ArquillianEmbeddedH2Pool">
-        <connection-url>jdbc:h2:mem:arquillian;DB_CLOSE_DELAY=-1;INIT=RUNSCRIPT FROM 'classpath:init.sql'</connection-url>
+                jndi-name="jdbc/main"
+                pool-name="MainPool">
+        <connection-url>jdbc:h2:mem:main;DB_CLOSE_DELAY=-1;INIT=RUNSCRIPT FROM 'classpath:main_db.sql'</connection-url>
+        <driver>h2</driver>
+    </datasource>
+    <datasource enabled="true"
+                jndi-name="jdbc/alice"
+                pool-name="AlicePool">
+        <connection-url>jdbc:h2:mem:alice;DB_CLOSE_DELAY=-1;INIT=RUNSCRIPT FROM 'classpath:alice_db.sql'</connection-url>
+        <driver>h2</driver>
+    </datasource>
+    <datasource enabled="true"
+                jndi-name="jdbc/bob"
+                pool-name="BobPool">
+        <connection-url>jdbc:h2:mem:bob;DB_CLOSE_DELAY=-1;INIT=RUNSCRIPT FROM 'classpath:bob_db.sql'</connection-url>
         <driver>h2</driver>
     </datasource>
 </datasources>

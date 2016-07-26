@@ -1,10 +1,7 @@
-#
-#
-
 # pull base image.
 FROM jamesdbloom/docker-java8-maven
 
-MAINTAINER Tomas Dvorak <tomas.dvorak@skidata.com>
+MAINTAINER Tomas Dvorak <todvora@gmail.com>
 
 ADD pom.xml pom.xml
 

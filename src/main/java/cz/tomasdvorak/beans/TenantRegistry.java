@@ -1,6 +1,8 @@
 package cz.tomasdvorak.beans;
 
 import cz.tomasdvorak.entities.Tenant;
+import cz.tomasdvorak.entities.TodoEntry;
+import cz.tomasdvorak.multitenancy.RuntimePersistenceGenerator;
 import org.apache.log4j.Logger;
 
 import javax.annotation.PostConstruct;
@@ -11,6 +13,7 @@ import javax.persistence.*;
 import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.CriteriaQuery;
 import javax.persistence.criteria.Root;
+import javax.persistence.spi.PersistenceUnitTransactionType;
 import java.util.*;
 
 /**
@@ -23,7 +26,7 @@ public class TenantRegistry {
     /**
      * Default, container managed EntityManager
      */
-    @PersistenceContext
+    @PersistenceContext(unitName = "main")
     private EntityManager entityManager;
 
     private final Set<Tenant> tenants = new HashSet<>();
@@ -66,10 +69,12 @@ public class TenantRegistry {
      * @return new EntityManagerFactory
      */
     private EntityManagerFactory createEntityManagerFactory(final Tenant tenant) {
-        final Map<String, String> props = new TreeMap<>();
-        logger.debug("Creating entity manager factory on schema '" + tenant.getSchemaName() + "' for tenant '" + tenant.getName() + "'.");
-        props.put("hibernate.default_schema", tenant.getSchemaName());
-        return Persistence.createEntityManagerFactory("test", props);
+        final RuntimePersistenceGenerator runtimePersistenceGenerator = new RuntimePersistenceGenerator(tenant.getSchemaName(), PersistenceUnitTransactionType.JTA, "jdbc/" + tenant.getSchemaName());
+        runtimePersistenceGenerator.addAnnotatedClass(TodoEntry.class);
+        runtimePersistenceGenerator.addProperty("hibernate.show_sql", "true");
+        runtimePersistenceGenerator.addProperty("hibernate.transaction.jta.platform", "org.hibernate.service.jta.platform.internal.JBossAppServerJtaPlatform");
+        runtimePersistenceGenerator.addProperty("hibernate.dialect", "org.hibernate.dialect.H2Dialect");
+        return runtimePersistenceGenerator.createEntityManagerFactory();
     }
 
     public Optional<Tenant> getTenant(final String tenantName) {

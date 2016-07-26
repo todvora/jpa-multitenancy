@@ -46,8 +46,9 @@ public class MultitenancyTest {
                 .addPackages(true, "cz.tomasdvorak")
                 .addAsResource("persistence.xml", "META-INF/persistence.xml")
                 .addAsWebInfResource("jbossas-ds.xml")
-                .addAsResource("schema/init.sql", "init.sql")
-                .addAsResource("log4j.xml")
+                .addAsResource("schema/main_db.sql", "main_db.sql")
+                .addAsResource("schema/alice_db.sql", "alice_db.sql")
+                .addAsResource("schema/bob_db.sql", "bob_db.sql")
                 .addAsWebInfResource(EmptyAsset.INSTANCE, "beans.xml");
         logger.debug(archive.toString(true));
         return archive;
