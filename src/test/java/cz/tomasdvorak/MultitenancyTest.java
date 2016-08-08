@@ -47,7 +47,7 @@ public class MultitenancyTest {
                 .addAsResource("persistence.xml", "META-INF/persistence.xml")
                 .addAsWebInfResource("jbossas-ds.xml")
                 .addAsResource("schema/init.sql", "init.sql")
-                .addAsResource("log4j.xml")
+                .addAsWebInfResource("log4j.xml")
                 .addAsWebInfResource(EmptyAsset.INSTANCE, "beans.xml");
         logger.debug(archive.toString(true));
         return archive;
