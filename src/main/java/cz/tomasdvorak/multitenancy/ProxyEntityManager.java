@@ -28,39 +28,37 @@ public class ProxyEntityManager {
 
     /**
      * Provider of EntityManagerFactory.
+     *
      * @see TenantRegistry#getTenant(String)
      * @see TenantRegistry#createEntityManagerFactory(Tenant)
      */
     @Inject
     private TenantRegistry tenantRegistry;
 
-    private final EntityManager proxy;
-
     private static final Logger logger = Logger.getLogger(ProxyEntityManager.class);
-
-    private ProxyEntityManager() {
-        proxy = (EntityManager)Proxy.newProxyInstance(this.getClass().getClassLoader(), new Class<?>[] { EntityManager.class },
-            (proxy, method, args) -> method.invoke(getCurrentEntityManager(), args));
-    }
 
     /**
      * CDI Producer. Checks if there is a tenant name in ThreadLocal storage {@link TenantHolder}. If yes, load tenant from {@link TenantRegistry},
      * get its EntityManagerFactory. From the factory create new EntityManager, join JTA transaction and return this EntityManager.
+     *
      * @return EntityManager for Tenant or default EntityManager, if no tenant logged in.
      */
     @Produces
     private EntityManager getEntityManager() {
-        return proxy;
-    }
-
-    private EntityManager getCurrentEntityManager() {
         final String currentTenant = TenantHolder.getCurrentTenant();
+
+        final EntityManager target;
+
         if (currentTenant != null) {
             logger.debug("Returning connection for tenant " + currentTenant);
-            final EntityManager em = tenantRegistry.getEntityManagerFactory(currentTenant).createEntityManager();
-            em.joinTransaction();
-            return em;
+            target = tenantRegistry.getEntityManagerFactory(currentTenant).createEntityManager();
+        } else {
+            target = entityManager;
         }
-        return entityManager;
+        return (EntityManager) Proxy.newProxyInstance(this.getClass().getClassLoader(), new Class<?>[]{EntityManager.class},
+                (proxy, method, args) -> {
+                    target.joinTransaction();
+                    return method.invoke(target, args);
+                });
     }
 }
