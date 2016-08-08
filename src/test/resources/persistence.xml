@@ -4,7 +4,7 @@
              xsi:schemaLocation="
         http://java.sun.com/xml/ns/persistence
         http://java.sun.com/xml/ns/persistence/persistence_2_0.xsd">
-<persistence-unit name="test">
+<persistence-unit name="test" transaction-type="JTA">
     <jta-data-source>jdbc/arquillian</jta-data-source>
 
     <class>cz.tomasdvorak.entities.Tenant</class>
